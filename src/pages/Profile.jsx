@@ -8,6 +8,17 @@ function Profile() {
     return <div className="text-center py-8">No user data available.</div>;
   }
 
+  // Fallback name: if first_name is empty, use email prefix
+  const displayFirstName =
+    user.first_name && user.first_name.trim().length > 0
+      ? user.first_name
+      : user.email.split("@")[0];
+
+  const displayLastName =
+    user.last_name && user.last_name.trim().length > 0
+      ? user.last_name
+      : "";
+
   return (
     <div className="max-w-xl mx-auto bg-white p-8 rounded-lg shadow mt-8">
       <h2 className="text-2xl font-semibold mb-4 text-blue-600">My Profile</h2>
@@ -15,7 +26,7 @@ function Profile() {
         <div>
           <span className="font-medium text-gray-700">Name:</span>
           <span className="ml-2 text-gray-900">
-            {user.first_name} {user.last_name}
+            {displayFirstName} {displayLastName}
           </span>
         </div>
         <div>
@@ -26,11 +37,9 @@ function Profile() {
           <span className="font-medium text-gray-700">Role:</span>
           <span className="ml-2 text-gray-900 capitalize">{user.role}</span>
         </div>
-        {/* Add more user info here if available */}
       </div>
     </div>
   );
 }
 
 export default Profile;
-  

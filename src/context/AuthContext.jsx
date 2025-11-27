@@ -69,12 +69,12 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await authAPI.login({ email, password });
       console.log("Full API Response:", res.data);
-      
+
       const {
         token,
         id,
-        firstName,    // Note: Changed from first_name
-        lastName,     // Note: Changed from last_name
+        firstName, // from backend (may be undefined)
+        lastName,  // from backend (may be undefined)
         email: userEmail,
         roles,
       } = res.data;
@@ -84,8 +84,9 @@ export const AuthProvider = ({ children }) => {
 
       const user = {
         id,
-        first_name: firstName,  // Map to frontend naming convention
-        last_name: lastName,    // Map to frontend naming convention
+        // fallbacks if backend doesn't send names
+        first_name: firstName || "",
+        last_name: lastName || "",
         email: userEmail,
         role: roles.includes("ROLE_ADMIN") ? "admin" : "employee",
       };

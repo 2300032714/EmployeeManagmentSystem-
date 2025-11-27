@@ -1,6 +1,10 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8083/api";
+// For now, use direct URL. Later you can switch to env:
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = "http://localhost:5053/api";
+
+console.log("API_BASE_URL =", API_BASE_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -10,8 +14,9 @@ const api = axios.create({
 // Interceptor for auth token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-  console.log(localStorage.getItem("token"));
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
@@ -38,55 +43,65 @@ export const employeeAPI = {
   search: (query) => api.get(`/employees/search?q=${query}`),
 };
 
-
+// Leave API – fixed to match LeaveRequestController
 export const leaveAPI = {
-  getAll: () => api.get("/leave-requests/leave"),
-  getByEmployee: (employeeId) => api.get(`/leave-requests/${employeeId}`),
-  create: (leaveRequest) =>
-    api.post("/leave-requests/post/leave", leaveRequest),
+  // GET /api/leave-requests
+  getAll: () => api.get("/leave-requests"),
+
+  // GET /api/leave-requests/employee/{employeeId}
+  getByEmployee: (employeeId) =>
+    api.get(`/leave-requests/employee/${employeeId}`),
+
+  // POST /api/leave-requests
+  create: (leaveRequest) => api.post("/leave-requests", leaveRequest),
+
   approve: (id) => api.put(`/leave-requests/${id}/approve`),
   reject: (id) => api.put(`/leave-requests/${id}/reject`),
   update: (id, leaveRequest) => api.put(`/leave-requests/${id}`, leaveRequest),
 };
 
+// Attendance API
 export const attendanceAPI = {
-  mark: (employeeId, status) => api.put(`/attendance/mark/${employeeId}?status=${status}`),
-  addCheckIn: (employeeId) => api.put(`/attendance/addcheckin/${employeeId}`),
+  mark: (employeeId, status) =>
+    api.put(`/attendance/mark/${employeeId}?status=${status}`),
+  addCheckIn: (employeeId) =>
+    api.put(`/attendance/addcheckin/${employeeId}`),
   getTodayAttendance: () => api.get(`/attendance/today`),
-  saveAll: (attendanceList) => Promise.all(
-    attendanceList.map(emp => api.put(`/attendance/mark/${emp.employeeId}?status=${emp.status}`))
-  ),
+  saveAll: (attendanceList) =>
+    Promise.all(
+      attendanceList.map((emp) =>
+        api.put(
+          `/attendance/mark/${emp.employeeId}?status=${emp.status}`
+        )
+      )
+    ),
 };
 
-
-// src/services/api.js
-
+// Payroll API
 export const payrollAPI = {
   getAll: () => api.get("/payrolls"),
   getByEmployee: (employeeId) => api.get(`/payrolls/employee/${employeeId}`),
   getByStatus: (status) => api.get(`/payrolls/status/${status}`),
-  updateStatus: (id, status) => api.put(`/payrolls/${id}/status?status=${status}`),
+  updateStatus: (id, status) =>
+    api.put(`/payrolls/${id}/status?status=${status}`),
 };
 
 // Performance API
 export const performanceAPI = {
-  getAll: () => api.get("/performance-reviews"),  // <-- backend endpoint
-  getByEmployee: (employeeId) => api.get(`/performance-reviews/employee/${employeeId}`),
+  getAll: () => api.get("/performance-reviews"),
+  getByEmployee: (employeeId) =>
+    api.get(`/performance-reviews/employee/${employeeId}`),
   create: (review) => api.post("/performance-reviews", review),
 };
 
-// services/api.js — update departmentAPI
-// ✅ FIXED departmentAPI - remove /summary from getAll()
+// Department API
 export const departmentAPI = {
-  getAll: () => api.get("/departments"),  // Changed from /departments/summary
+  getAll: () => api.get("/departments"),
   getById: (id) => api.get(`/departments/${id}`),
   create: (department) => api.post("/departments", department),
   update: (id, department) => api.put(`/departments/${id}`, department),
   delete: (id) => api.delete(`/departments/${id}`),
   getEmployees: (id) => api.get(`/departments/${id}/employees`),
 };
-
-
-
 
 export default api;
